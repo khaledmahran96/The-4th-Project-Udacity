@@ -26,7 +26,6 @@ class AuthenticationActivity : AppCompatActivity() {
     }
 
     private lateinit var binding : ActivityAuthenticationBinding
-    private val viewModel = AuthenticationViewModel()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,16 +33,6 @@ class AuthenticationActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this , R.layout.activity_authentication)
 
 
-//        viewModel.authenticationState.observe(this , Observer { authenticationState ->
-//            when(authenticationState){
-//                AuthenticationViewModel.AuthenticationState.AUTHENTICATED ->{
-//                    startActivity(Intent(this , RemindersActivity::class.java))
-//                    finish()
-//                }else -> {
-//                    binding.authButton.setOnClickListener { launchSignInFlow() }
-//                }
-//            }
-//        })
 
 
         //TODO: Implement the create account and sign in using FirebaseUI, use sign in using email and sign in using Google

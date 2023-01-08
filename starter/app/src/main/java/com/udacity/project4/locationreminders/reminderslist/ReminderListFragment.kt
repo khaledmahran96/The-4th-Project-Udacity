@@ -1,12 +1,17 @@
 package com.udacity.project4.locationreminders.reminderslist
 
+import android.content.ContentValues.TAG
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import androidx.databinding.DataBindingUtil
 import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI
 import com.firebase.ui.auth.AuthUI
 import com.udacity.project4.R
+import com.udacity.project4.authentication.AuthenticationActivity
+import com.udacity.project4.authentication.AuthenticationViewModel
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentRemindersBinding
@@ -46,6 +51,22 @@ class ReminderListFragment : BaseFragment() {
         binding.addReminderFAB.setOnClickListener {
             navigateToAddReminder()
         }
+
+        binding.viewModel?.authenticationState?.observe(viewLifecycleOwner , androidx.lifecycle.Observer {
+            when(it){
+                RemindersListViewModel.AuthenticationState.AUTHENTICATED->{
+                    Log.i(TAG , "Login Successful")
+                }
+                RemindersListViewModel.AuthenticationState.UNAUTHENTICATED ->{
+                    startActivity(Intent(context , AuthenticationActivity::class.java))
+                }
+
+                else ->{
+                    Log.i(TAG , "No UI changes needed!!")
+                }
+            }
+        })
+
     }
 
     override fun onResume() {

@@ -34,16 +34,16 @@ class AuthenticationActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this , R.layout.activity_authentication)
 
 
-        viewModel.authenticationState.observe(this , Observer { authenticationState ->
-            when(authenticationState){
-                AuthenticationViewModel.AuthenticationState.AUTHENTICATED ->{
-                    startActivity(Intent(this , RemindersActivity::class.java))
-                    finish()
-                }else -> {
-                    binding.authButton.setOnClickListener { launchSignInFlow() }
-                }
-            }
-        })
+//        viewModel.authenticationState.observe(this , Observer { authenticationState ->
+//            when(authenticationState){
+//                AuthenticationViewModel.AuthenticationState.AUTHENTICATED ->{
+//                    startActivity(Intent(this , RemindersActivity::class.java))
+//                    finish()
+//                }else -> {
+//                    binding.authButton.setOnClickListener { launchSignInFlow() }
+//                }
+//            }
+//        })
 
 
         //TODO: Implement the create account and sign in using FirebaseUI, use sign in using email and sign in using Google
@@ -68,6 +68,8 @@ class AuthenticationActivity : AppCompatActivity() {
                     "Successfully signed in user " +
                             "${FirebaseAuth.getInstance().currentUser?.displayName}!"
                 )
+
+                startActivity(Intent(this , RemindersActivity::class.java))
             } else {
                 // Sign in failed. If response is null the user canceled the sign-in flow using
                 // the back button. Otherwise check response.getError().getErrorCode() and handle

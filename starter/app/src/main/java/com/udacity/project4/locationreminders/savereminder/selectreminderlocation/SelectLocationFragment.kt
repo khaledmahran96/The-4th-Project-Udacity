@@ -71,9 +71,9 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
 
 
 //        TODO: call this function after the user confirms on the selected location
-        binding.saveButton.setOnClickListener {
+
             onLocationSelected()
-        }
+
 
         return binding.root
     }
@@ -87,14 +87,14 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney , zoomLevel ))
 
 
-        setMapStyle(map)
-        setMapLongClick(map)
-        setPoiClick(map)
+        setMapStyle()
+        setMapLongClick()
+        setPoiClick()
         enableMyLocation()
 
     }
 
-    private fun setMapStyle(map: GoogleMap) {
+    private fun setMapStyle() {
         try {
             // Customize the styling of the base map using a JSON object defined
             // in a raw resource file.
@@ -112,8 +112,9 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
         }
     }
 
-    private fun setMapLongClick (map: GoogleMap) {
+    private fun setMapLongClick () {
         map.setOnMapLongClickListener { it ->
+            map.clear()
             val snippet = String.format(
                 Locale.getDefault(),
                 "Lat: %1$.5f, Long: %2$.5f",
@@ -121,24 +122,27 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
                 it.longitude
             )
 
-            map.addMarker(
+            marker = map.addMarker(
                 MarkerOptions()
                     .position(it)
                     .title(getString(R.string.dropped_pin))
                     .snippet(snippet)
-                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE))
+                    .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
             )
+            marker.showInfoWindow()
         }
     }
 
-    private fun setPoiClick(map: GoogleMap) {
+    private fun setPoiClick() {
         map.setOnPoiClickListener { poi ->
-            val poiMarker = map.addMarker(
+
+            map.clear()
+            marker = map.addMarker(
                 MarkerOptions()
                     .position(poi.latLng)
                     .title(poi.name)
             )
-            poiMarker?.showInfoWindow()
+            marker.showInfoWindow()
         }
     }
 
@@ -146,13 +150,16 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
         //        TODO: When the user confirms on the selected location,
         //         send back the selected location details to the view model
         //         and navigate back to the previous fragment to save the reminder and add the geofence
-        if(this::marker.isInitialized){
-            _viewModel.latitude.value = marker.position.latitude
-            _viewModel.longitude.value = marker.position.longitude
-            _viewModel.reminderSelectedLocationStr.value = marker.title
-            findNavController().popBackStack()
-        } else {
-            Toast.makeText(context , getString(R.string.select_location) , Toast.LENGTH_SHORT).show()
+        binding.saveButton.setOnClickListener {
+            if (this::marker.isInitialized) {
+                _viewModel.latitude.value = marker.position.latitude
+                _viewModel.longitude.value = marker.position.longitude
+                _viewModel.reminderSelectedLocationStr.value = marker.title
+                findNavController().popBackStack()
+            } else {
+                Toast.makeText(context, getString(R.string.select_location), Toast.LENGTH_SHORT)
+                    .show()
+            }
         }
 
     }

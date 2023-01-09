@@ -2,8 +2,13 @@ package com.udacity.project4.locationreminders.geofence
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
+import android.webkit.GeolocationPermissions
 import androidx.core.app.JobIntentService
 import com.google.android.gms.location.Geofence
+import com.google.android.gms.location.GeofenceStatusCodes
+import com.google.android.gms.location.GeofencingEvent
+import com.udacity.project4.R
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
@@ -37,11 +42,23 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
         //TODO: handle the geofencing transition events and
         // send a notification to the user when he enters the geofence area
         //TODO call @sendNotification
+
+        val geofencingEvent = GeofencingEvent.fromIntent(intent)
+        if(geofencingEvent.hasError()){
+            Log.e("Geofence" , errorMsg(this , geofencingEvent.errorCode))
+            return
+        }
+        if(geofencingEvent.geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER){
+            Log.v("Geofence" , resources.getString(R.string.geofence_entered))
+            sendNotification(geofencingEvent.triggeringGeofences)
+        }
+
     }
 
     //TODO: get the request id of the current geofence
     private fun sendNotification(triggeringGeofences: List<Geofence>) {
-        val requestId = ""
+        val requestId = triggeringGeofences[0].requestId
+        Log.d("Notification" , "True")
 
         //Get the local repository instance
         val remindersLocalRepository: ReminderDataSource by inject()
@@ -62,6 +79,24 @@ class GeofenceTransitionsJobIntentService : JobIntentService(), CoroutineScope {
                         reminderDTO.id
                     )
                 )
+            }
+        }
+    }
+
+    private fun errorMsg(context: Context , errorCode: Int ): String {
+        val resources =context.resources
+        return when(errorCode){
+            GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE -> {
+                resources.getString(R.string.geofence_not_available)
+            }
+            GeofenceStatusCodes.GEOFENCE_TOO_MANY_GEOFENCES -> {
+                resources.getString(R.string.geofence_too_many_geofences)
+            }
+            GeofenceStatusCodes.GEOFENCE_TOO_MANY_PENDING_INTENTS -> {
+                resources.getString(R.string.geofence_too_many_pending_intents)
+            }
+            else -> {
+                resources.getString(R.string.geofence_unknown_error)
             }
         }
     }

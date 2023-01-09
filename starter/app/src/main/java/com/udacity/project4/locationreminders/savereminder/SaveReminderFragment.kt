@@ -40,6 +40,8 @@ class SaveReminderFragment : BaseFragment() {
 
     private lateinit var reminderDataItem: ReminderDataItem
 
+    private var resultCode = 0
+
     private val runningQOrLater = android.os.Build.VERSION.SDK_INT >=
             android.os.Build.VERSION_CODES.Q
 
@@ -62,6 +64,7 @@ class SaveReminderFragment : BaseFragment() {
         setDisplayHomeAsUpEnabled(true)
 
         binding.viewModel = _viewModel
+        geofencingClient =LocationServices.getGeofencingClient(thisContext)
 
         return binding.root
     }
@@ -76,7 +79,7 @@ class SaveReminderFragment : BaseFragment() {
                     .To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())
         }
 
-        geofencingClient =LocationServices.getGeofencingClient(thisContext)
+
 
         binding.saveReminder.setOnClickListener {
             val title = _viewModel.reminderTitle.value
@@ -128,7 +131,7 @@ class SaveReminderFragment : BaseFragment() {
         if (foregroundAndBackgroundLocationPermissionApproved())
             return
         var permissionsArray = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
-        val resultCode = when {
+        resultCode = when {
             runningQOrLater -> {
                 permissionsArray += Manifest.permission.ACCESS_BACKGROUND_LOCATION
                 REQUEST_FOREGROUND_AND_BACKGROUND_PERMISSION_RESULT_CODE
@@ -136,8 +139,7 @@ class SaveReminderFragment : BaseFragment() {
             else -> REQUEST_FOREGROUND_ONLY_PERMISSIONS_REQUEST_CODE
         }
         Log.d(TAG, "Request foreground only location permission")
-        ActivityCompat.requestPermissions(
-            requireActivity(),
+        requestPermissions(
             permissionsArray,
             resultCode
         )
@@ -145,8 +147,7 @@ class SaveReminderFragment : BaseFragment() {
 
     @SuppressLint("MissingPermission")
     private fun addGeofenceForApp(){
-        if(_viewModel.validateEnteredData(reminderDataItem)){
-            _viewModel.validateAndSaveReminder(reminderDataItem)
+        if(_viewModel.validateAndSaveReminder(reminderDataItem)){
             val geofence = Geofence.Builder()
                 .setRequestId(reminderDataItem.id)
                 .setCircularRegion(reminderDataItem.latitude!! , reminderDataItem.longitude!! , GEOFENCE_RADIUS_IN_METERS )
@@ -157,24 +158,22 @@ class SaveReminderFragment : BaseFragment() {
                 .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
                 .addGeofence(geofence).build()
 
-            geofencingClient.removeGeofences(geofencePendingIntent)?.run{
-                addOnCompleteListener{
-                    geofencingClient.addGeofences(geofencingRequest , geofencePendingIntent)?.run {
-                        addOnSuccessListener {
-                            Toast.makeText(thisContext , resources.getString(R.string.geofence_added) ,
-                                Toast.LENGTH_SHORT).show()
-                            Log.e("Add Geofence" , geofence.requestId)
-                        }
-                        addOnFailureListener {
-                            Toast.makeText(thisContext , resources.getString(R.string.geofences_not_added) ,
-                                Toast.LENGTH_SHORT).show()
-                            if ((it.message != null)){
-                                Log.w(TAG , it.message!!)
-                            }
-                        }
+
+            geofencingClient.addGeofences(geofencingRequest , geofencePendingIntent)?.run {
+                addOnSuccessListener {
+                    Toast.makeText(thisContext , resources.getString(R.string.geofence_added) ,
+                        Toast.LENGTH_SHORT).show()
+                    Log.e("Add Geofence" , geofence.requestId)
+                }
+                addOnFailureListener {
+                    Toast.makeText(thisContext , resources.getString(R.string.geofences_not_added) ,
+                        Toast.LENGTH_SHORT).show()
+                    if ((it.message != null)){
+                        Log.w(TAG , it.message!!)
                     }
                 }
             }
+            _viewModel.onClear()
         }
     }
 
@@ -184,14 +183,13 @@ class SaveReminderFragment : BaseFragment() {
             priority = LocationRequest.PRIORITY_LOW_POWER
         }
         val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-        val settingsClient = LocationServices.getSettingsClient(requireActivity())
+        val settingsClient = LocationServices.getSettingsClient(thisContext)
         val locationSettingsResponseTask =
             settingsClient.checkLocationSettings(builder.build())
         locationSettingsResponseTask.addOnFailureListener { exception ->
             if (exception is ResolvableApiException && resolve){
                 try {
-                    exception.startResolutionForResult(requireActivity(),
-                        REQUEST_TURN_DEVICE_LOCATION_ON)
+                    startIntentSenderForResult(exception.resolution.intentSender , REQUEST_TURN_DEVICE_LOCATION_ON, null , 0 , 0 , 0 , null )
                 } catch (sendEx: IntentSender.SendIntentException) {
                     Log.d(TAG, "Error getting location settings resolution: " + sendEx.message)
                 }
@@ -271,6 +269,17 @@ class SaveReminderFragment : BaseFragment() {
         //make sure to clear the view model after destroy, as it's a single view model.
         _viewModel.onClear()
     }
+
+    override fun onResume() {
+        super.onResume()
+        thisContext = requireContext()
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        thisContext = context
+    }
+
     companion object {
         internal const val ACTION_GEOFENCE_EVENT =
             "SaveReminderFragment.Project4.action.ACTION_GEOFENCE_EVENT"

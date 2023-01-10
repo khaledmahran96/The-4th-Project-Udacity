@@ -43,8 +43,13 @@ Explain what each test does and why
 ```
 1.androidTest
         //TODO: Students explain their testing here.
+        we use androidTest for the code that need to be applied in an android enviroment like 
+        fragment and end to end tests and code that need to interact with views using 
+        espersoo and mockito like navigating between fragments.
 2. test
         //TODO: Students explain their testing here.
+        We use test for the things that can normally run with robolitcs or on our local machine like viewmodels
+        and others that dosent need the android enviroment.
 ```
 
 ## Project Instructions

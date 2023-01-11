@@ -221,16 +221,43 @@ class SelectLocationFragment : BaseFragment() , OnMapReadyCallback{
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 
+        //https://developer.android.com/training/permissions/requesting#manage-request-code-yourself
         // Check if location permissions are granted and if so enable the
         // location data layer.
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.size > 0 && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                enableMyLocation()
+
+        when (requestCode) {
+            REQUEST_LOCATION_PERMISSION -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() &&
+                            grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // Permission is granted. Continue the action or workflow
+                    // in your app.
+                    enableMyLocation()
+                } else {
+                    // Explain to the user that the feature is unavailable because
+                    // the feature requires a permission that the user has denied.
+                    // At the same time, respect the user's decision. Don't link to
+                    // system settings in an effort to convince the user to change
+                    // their decision.
+                    Toast.makeText(context , getString(R.string.location_required_error) , Toast.LENGTH_LONG).show()
+                }
+                return
             }
-        } else {
-            //Asking the user to enable the location permissions
-            Toast.makeText(context , getString(R.string.location_required_error) , Toast.LENGTH_LONG).show()
+
+            else -> {
+                // Ignore all other requests.
+            }
         }
+
+
+//        if (requestCode == REQUEST_LOCATION_PERMISSION) {
+//            if (grantResults.size > 0 && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+//                enableMyLocation()
+//            }
+//        } else {
+//            //Asking the user to enable the location permissions
+//            Toast.makeText(context , getString(R.string.location_required_error) , Toast.LENGTH_LONG).show()
+//        }
     }
 
 

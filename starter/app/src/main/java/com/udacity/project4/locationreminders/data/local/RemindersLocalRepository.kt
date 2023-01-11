@@ -28,7 +28,7 @@ class RemindersLocalRepository(
             return@withContext try {
                 Result.Success(remindersDao.getReminders())
             } catch (ex: Exception) {
-                Result.Error(ex)
+                Result.Error(ex.localizedMessage)
             }
         }
     }
@@ -57,10 +57,10 @@ class RemindersLocalRepository(
                 if (reminder != null) {
                     return@withContext Result.Success(reminder)
                 } else {
-                    return@withContext Result.Error(Exception("Reminder not found!"))
+                    return@withContext Result.Error("Reminder not found!")
                 }
             } catch (e: Exception) {
-                return@withContext Result.Error(e)
+                return@withContext Result.Error(e.localizedMessage)
             }
         }
     }

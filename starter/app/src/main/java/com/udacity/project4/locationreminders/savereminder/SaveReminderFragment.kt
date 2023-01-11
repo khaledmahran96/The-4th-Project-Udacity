@@ -3,6 +3,7 @@ package com.udacity.project4.locationreminders.savereminder
 import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
+import android.app.Activity
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -181,7 +182,7 @@ class SaveReminderFragment : BaseFragment() {
             priority = LocationRequest.PRIORITY_LOW_POWER
         }
         val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-        val settingsClient = LocationServices.getSettingsClient(thisContext)
+        val settingsClient = LocationServices.getSettingsClient(requireActivity())
         val locationSettingsResponseTask =
             settingsClient.checkLocationSettings(builder.build())
         locationSettingsResponseTask.addOnFailureListener { exception ->
@@ -202,6 +203,7 @@ class SaveReminderFragment : BaseFragment() {
         }
         locationSettingsResponseTask.addOnCompleteListener {
             if ( it.isSuccessful ) {
+                Log.i("Successful" , "$it")
                 //addGeofenceForClue()
                 addGeofenceForApp()
             }
@@ -225,7 +227,11 @@ class SaveReminderFragment : BaseFragment() {
         super.onActivityResult(requestCode, resultCode, data)
         //Adding code to check that the user turned on their device location and ask
         if(resultCode == REQUEST_TURN_DEVICE_LOCATION_ON){
-            checkDeviceLocationSettingsAndStartGeofence(false)
+            if (resultCode == Activity.RESULT_OK){
+                addGeofenceForApp()
+            }else{
+                checkDeviceLocationSettingsAndStartGeofence(false)
+            }
         }
     }
 
@@ -250,7 +256,7 @@ class SaveReminderFragment : BaseFragment() {
                 R.string.permission_denied_explanation,
                 Snackbar.LENGTH_INDEFINITE
             )
-                .setAction(R.string.settings) {
+                .setAction(R.string.ok) {
                     startActivity(Intent().apply {
                         action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
                         data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)

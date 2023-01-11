@@ -1,6 +1,8 @@
 package com.udacity.project4
 
+import android.app.Activity
 import android.app.Application
+import android.os.Build
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
@@ -37,10 +39,13 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.get
+import org.robolectric.annotation.Config
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
 @ExperimentalCoroutinesApi
+@Config(sdk = [Build.VERSION_CODES.P])
+
 //END TO END test to black box test the app
 class RemindersActivityTest :
     AutoCloseKoinTest() {// Extended Koin Test - embed autoclose @after method to close Koin after every test
@@ -56,7 +61,17 @@ class RemindersActivityTest :
         RemindersActivity::class.java
     )
 
-    var activity = activityTestRule!!.activity
+
+
+    private fun getActivity(activityScenario: ActivityScenario<RemindersActivity>):Activity?{
+        var activity: Activity? = null
+        activityScenario.onActivity {
+            activity = it
+        }
+        return activity
+    }
+
+
     /**
      * As we use Koin as a Service Locator Library to develop our code, we'll also use Koin to test our code.
      * at this step we will initialize Koin related code to be able to use it in out testing.
@@ -132,10 +147,14 @@ class RemindersActivityTest :
         onView(withId(R.id.saveReminder)).perform(click())
 
         //THEN - A new reminder should be shown with a toast Reminder Saved!
-        //I faced alot of error with toast test so i searched and used this solution
+        //I faced alot of error with toast test so i searched and used this codes but the toast test
+        //canoot run on API 29 and above.
         //https://stackoverflow.com/questions/28390574/checking-toast-message-in-android-espresso
+        //The issue still open til now.
+        //https://github.com/android/android-test/issues/803
+        //but i think this code should work properly on API28
 
-        onView(withText(R.string.reminder_saved)).inRoot(withDecorView(not(`is`(activity?.window?.decorView))))
+        onView(withText(R.string.reminder_saved)).inRoot(withDecorView(not(`is`(getActivity(activityScenario)?.window?.decorView))))
             .check(matches(isDisplayed()))
 
         onView(withText("Reminder Title")).check(matches(isDisplayed()))
@@ -144,5 +163,27 @@ class RemindersActivityTest :
         activityScenario.close()
 
     }
+
+    @Test
+    fun addNewReminderWithMissingData_clickOnSaveButton() = runBlockingTest {
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+
+        // GIVEN - Saving reminder without location
+        onView(withId(R.id.addReminderFAB)).perform(click())
+        onView(withId(R.id.reminderTitle)).perform(replaceText("Title"))
+        onView(withId(R.id.reminderDescription)).perform(replaceText("Description"))
+
+        // WHEN - Clicking on saveButton
+        onView(withId(R.id.saveReminder)).perform(click())
+
+        // THEN - Snackbar shows up
+        val snackBar = appContext.getString(R.string.err_select_location)
+        onView(withText(snackBar)).check(matches(isDisplayed()))
+
+        // Make sure the activity is closed before resetting the db:
+        activityScenario.close()
+    }
+
 
 }

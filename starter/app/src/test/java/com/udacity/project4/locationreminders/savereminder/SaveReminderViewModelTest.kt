@@ -14,6 +14,7 @@ import com.udacity.project4.locationreminders.reminderslist.RemindersListViewMod
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.hamcrest.CoreMatchers.`is`
+import org.hamcrest.CoreMatchers.notNullValue
 import org.hamcrest.Matchers
 import org.junit.Assert.assertThat
 import org.junit.Before
@@ -57,7 +58,7 @@ class SaveReminderViewModelTest {
 
         saveRemindersViewModel.validateAndSaveReminder(testMissingDataTitle)
 
-        assertThat(saveRemindersViewModel.showSnackBarInt.getOrAwaitValue() , `is`(Matchers.notNullValue()))
+        assertThat(saveRemindersViewModel.showSnackBarInt.getOrAwaitValue() , notNullValue())
     }
 
     @Test
@@ -71,7 +72,18 @@ class SaveReminderViewModelTest {
 
         saveRemindersViewModel.validateAndSaveReminder(testMissingDataLocation)
 
-        assertThat(saveRemindersViewModel.showSnackBarInt.getOrAwaitValue() , `is`(Matchers.notNullValue()))
+        assertThat(saveRemindersViewModel.showSnackBarInt.getOrAwaitValue() , notNullValue())
+    }
+
+    @Test
+    fun dataAvailable_saveButtonClicked(){
+        val reminder = ReminderDataItem("Title" ,
+            "Description" ,
+            "Location" ,
+            20.0 ,
+            30.0)
+        saveRemindersViewModel.saveReminder(reminder)
+        assertThat(saveRemindersViewModel.showToast.getOrAwaitValue() , `is`("Reminder Saved !"))
     }
 
     @Test

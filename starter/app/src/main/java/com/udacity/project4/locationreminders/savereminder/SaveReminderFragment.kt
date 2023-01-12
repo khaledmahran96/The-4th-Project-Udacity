@@ -3,7 +3,6 @@ package com.udacity.project4.locationreminders.savereminder
 import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
-import android.app.Activity
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
@@ -226,14 +225,11 @@ class SaveReminderFragment : BaseFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         //Adding code to check that the user turned on their device location and ask
-        if(resultCode == REQUEST_TURN_DEVICE_LOCATION_ON){
-            if (resultCode == Activity.RESULT_OK){
-                addGeofenceForApp()
-            }else{
-                checkDeviceLocationSettingsAndStartGeofence(false)
-            }
+        if(requestCode == REQUEST_TURN_DEVICE_LOCATION_ON){
+            checkDeviceLocationSettingsAndStartGeofence(false)
         }
     }
+
 
     override fun onRequestPermissionsResult(
         requestCode: Int,

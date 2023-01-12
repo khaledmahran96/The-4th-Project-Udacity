@@ -77,7 +77,7 @@ class RemindersActivityTest :
      * at this step we will initialize Koin related code to be able to use it in out testing.
      */
     @Before
-    fun init() {
+    fun initDb() {
         stopKoin()//stop the original app koin
         appContext = getApplicationContext()
         val myModule = module {
@@ -107,6 +107,11 @@ class RemindersActivityTest :
         runBlocking {
             repository.deleteAllReminders()
         }
+    }
+
+    @After
+    fun cleanDb() = runBlocking {
+        repository.deleteAllReminders()
     }
 
     /**
@@ -147,8 +152,8 @@ class RemindersActivityTest :
         onView(withId(R.id.saveReminder)).perform(click())
 
         //THEN - A new reminder should be shown with a toast Reminder Saved!
-        //I faced alot of error with toast test so i searched and used this codes but the toast test
-        //canoot run on API 29 and above.
+        //I faced a lot of errors with toast test so i searched and used this codes but the toast test
+        //cannot run on API 29 and above.
         //https://stackoverflow.com/questions/28390574/checking-toast-message-in-android-espresso
         //The issue still open til now.
         //https://github.com/android/android-test/issues/803

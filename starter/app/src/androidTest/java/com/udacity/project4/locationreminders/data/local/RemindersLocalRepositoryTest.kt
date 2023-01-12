@@ -94,7 +94,7 @@ class RemindersLocalRepositoryTest {
         // THEN - Error should be shown and result cannot be empty.
         assertThat(result is Result.Error , `is`(true))
         result as Result.Error
-        assertThat(result , `is`(notNullValue()))
+        assertThat(result.message , `is`("Reminder not found!"))
     }
 
 }

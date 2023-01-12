@@ -52,7 +52,7 @@ class RemindersListViewModelTest {
         remindersListViewModel.loadReminders()
 
 
-        //Checking that is there is no reminder that SnackBar should not be null
+        //Checking that is there is no reminder that SnackBar should return error message
         assertThat(remindersListViewModel.showSnackBar.getOrAwaitValue() , `is`("Reminders not found"))
     }
 
